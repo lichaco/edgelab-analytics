@@ -9,7 +9,7 @@ const $=id=>document.getElementById(id);
 const make=(tag,value,cls)=>{const e=document.createElement(tag);if(value!==null)e.textContent=String(value);if(cls)e.className=cls;return e};
 const panel=make('section',null,'panel odds-panel');
 panel.id='autoOdds';
-panel.innerHTML='<div class="sectionhead"><div><h3>📈 Cuotas automáticas y detector de valor</h3><p class="desc">ESPN Core · casas publicadas para cada encuentro · sin clave de pago</p></div><span class="pill">Actualización programada</span></div><div class="odds-filters"><label>Casa <select id="oddsBook"><option value="">Todas las casas disponibles</option></select></label><label>Mercado <select id="oddsMarket"><option value="">Todos</option><option value="result">Ganador</option><option value="goals">Goles</option><option value="totals">Totales</option><option value="prop">Props</option><option value="spread">Hándicap</option><option value="corners">Córners</option><option value="cards">Tarjetas</option></select></label></div><div id="oddsNotice" role="status" class="odds-notice">Comprobando cuotas…</div><div class="odds-stats"><span id="oddsEventCount">0 partidos con cuotas</span><span id="oddsSignalCount">0 señales</span></div><div id="oddsSignals"></div><details class="odds-all"><summary>Ver todas las cuotas disponibles por partido</summary><div id="oddsBoards"></div></details><p class="odds-footnote">EV modelo: probabilidad Poisson × cuota − 1. Comparación entre casas: precio frente a probabilidad sin margen de la otra casa, no equivale a pronóstico validado. Cuotas referenciales de ESPN Core: pueden ser limitadas, diferidas o dejar de estar disponibles. No son precios ejecutables.</p>';
+panel.innerHTML='<div class="sectionhead"><div><h3>📈 Cuotas automáticas y detector de valor</h3><p class="desc">ESPN Core + The Odds API (si está configurada) · cuotas prepartido de referencia</p></div><span class="pill">Actualización programada</span></div><div class="odds-filters"><label>Casa <select id="oddsBook"><option value="">Todas las casas disponibles</option></select></label><label>Mercado <select id="oddsMarket"><option value="">Todos</option><option value="result">Ganador</option><option value="goals">Goles</option><option value="totals">Totales</option><option value="prop">Props</option><option value="spread">Hándicap</option><option value="corners">Córners</option><option value="cards">Tarjetas</option></select></label></div><div id="oddsNotice" role="status" class="odds-notice">Comprobando cuotas…</div><div class="odds-stats"><span id="oddsEventCount">0 partidos con cuotas</span><span id="oddsSignalCount">0 señales</span></div><div id="oddsSignals"></div><details class="odds-all"><summary>Ver todas las cuotas disponibles por partido</summary><div id="oddsBoards"></div></details><p class="odds-footnote">EV modelo: probabilidad Poisson × cuota − 1. Comparación entre casas: precio frente a probabilidad sin margen de la otra casa, no equivale a pronóstico validado. Cuotas de referencia desde ESPN Core y The Odds API cuando esté activada. Las props requieren estadísticas independientes para evaluar su probabilidad de acierto. No son precios ejecutables.</p>';
 document.getElementById('calendar')?.insertAdjacentElement('afterend',panel);
 let sport='football',odds=null,calendar=null,focusFixture='',loadedAt=0;
 const active=()=>Number.isFinite(loadedAt)&&Date.now()-loadedAt<8*3600*1000;
@@ -41,6 +41,8 @@ function selectedRows(ev){
  return ev.rows.filter(r=>(!book||r.book===book)&&(!market||r.kind===market));
 }
 function opportunity(r){
+ const age=r.updated_at?Date.now()-Date.parse(r.updated_at):null;
+ if(age!==null&&(!Number.isFinite(age)||age<0||age>8*3600*1000))return false;
  if(!active()||!r.analysis||r.analysis.p===null)return false;
  return r.analysis.ev>=(r.analysis.type==='modelo'?.025:.04);
 }
@@ -69,16 +71,20 @@ function render(){
   const button=make('button','Mostrar todos los partidos','btn');button.type='button';
   button.addEventListener('click',()=>{focusFixture='';render()});root.append(button);
  }
+ if(diag.the_odds_api){
+  const api=diag.the_odds_api;
+  root.append(make('p', 'odds-meta', 'The Odds API: '+(api.status||'sin estado')+' · props añadidas: '+(api.props_added||0)+' · créditos restantes: '+(api.remaining_credits??'s/d')));
+ }
  if(diag.errors?.length)root.append(make('p','Incidencias: '+diag.errors.slice(0,2).join(' · '),'odds-error'));
  if(!signals.length)root.append(make('p','No hay señales positivas calculables con las cuotas actuales. Consulta todas las líneas más abajo.','odds-empty'));
  else{
   root.append(make('h4','Señales automáticas · ordenadas por valor estimado'));
   const scroller=make('div',null,'odds-scroll');const table=make('table');
-  appendHead(table,['Partido','Casa','Mercado','Cuota','Prob. referencia','EV relativo','Base']);
+  appendHead(table,['Partido','Casa','Mercado','Cuota','Prob. referencia','EV relativo','Base','Fuente']);
   const body=make('tbody');
   for(const r of signals.slice(0,50)){
    const tr=make('tr');
-   for(const value of [r.event.home+' vs '+r.event.away,r.book,labelRow(r),fmt(r.price),pct(r.analysis.p),'+'+pct(r.analysis.ev),r.analysis.type])tr.append(make('td',value));
+   for(const value of [r.event.home+' vs '+r.event.away,r.book,labelRow(r),fmt(r.price),pct(r.analysis.p),'+'+pct(r.analysis.ev),r.analysis.type,r.source||'s/d'])tr.append(make('td',value));
    tr.children[5].className='value';body.append(tr);
   }
   table.append(body);scroller.append(table);root.append(scroller);
@@ -91,11 +97,11 @@ function render(){
   details.append(make('summary',game.home+' vs '+game.away+' · '+game.competition_id+' · '+dateChile(game.utc)+' CL'));
   if(game.rates)details.append(make('p','Goles esperados Poisson: '+fmt(game.rates.home)+' / '+fmt(game.rates.away)+' · histórico: '+game.rates.trainGames+' partidos.','odds-meta'));
   const box=make('div',null,'odds-scroll'),table=make('table');
-  appendHead(table,['Casa','Mercado / selección','Cuota','Prob. referencia','Cuota justa','EV relativo','Base']);
+  appendHead(table,['Casa','Mercado / selección','Cuota','Prob. referencia','Cuota justa','EV relativo','Base','Fuente / hora']);
   const body=make('tbody');
   for(const r of selectedRows(game).slice(0,240)){
    const tr=make('tr'),a=r.analysis,p=a?.p;
-   for(const val of [r.book,labelRow(r),fmt(r.price),p?pct(p):'—',p?fmt(a.fair):'—',p?(a.ev>=0?'+':'')+pct(a.ev):'—',p?a.type:'Sin modelo'])tr.append(make('td',val));
+   for(const val of [r.book,labelRow(r),fmt(r.price),p?pct(p):'—',p?fmt(a.fair):'—',p?(a.ev>=0?'+':'')+pct(a.ev):'—',p?a.type:'Sin modelo',(r.source||'Sin fuente')+' · '+(r.updated_at?dateChile(r.updated_at)+' CL':'sin hora')])tr.append(make('td',val));
    if(p)tr.children[5].className=a.ev>=0?'value':'neg';
    body.append(tr);
   }
