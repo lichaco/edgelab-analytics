@@ -1,0 +1,22 @@
+name: Verificaciones EdgeLab
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  static-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar JavaScript
+        run: npm run check
+      - name: Ejecutar pruebas
+        run: npm test
