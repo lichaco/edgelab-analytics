@@ -43,3 +43,5 @@
 @media(max-width:520px){.calendar-controls .field:first-child,.calendar-controls .field:nth-child(3){grid-column:1/-1}.calendar-head .pill{display:none}.calendar-names{font-size:13px}}
 
 .calendar-bottom .btn:disabled{opacity:.62;cursor:not-allowed;border-color:#536074}
+
+.calendar-odds-line{margin:0 0 12px;padding:9px 11px;border:1px solid #365d4a;border-radius:8px;color:#a6e5c7;background:#132a23;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
