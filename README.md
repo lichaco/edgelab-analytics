@@ -12,6 +12,14 @@ Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y
 > **Estado v0.6:** calendario automático y cuotas de referencia gratuitas de ESPN Core integrados con GitHub Pages. Actualmente se identifican precios de DraftKings donde están publicados. El modelo de fútbol sigue siendo experimental y las probabilidades no están calibradas como predicciones rentables.
 
 
+## The Odds API — player props gratuitos (v0.8)
+
+Se añadió `scripts/build_the_odds_api.py` al despliegue de GitHub Pages. Si existe el **secret** `THE_ODDS_API_KEY`, cada actualización consulta los endpoints de eventos gratuitos y realiza como máximo **una** consulta de cuotas de un evento / un mercado / una región (coste máximo esperado: 1 crédito). Alterna entre **NBA: puntos, rebotes, asistencias** y **NHL: tiros a portería, puntos**; sin evento coincidente o sin mercado publicado no se inventan cuotas.
+
+El plan Starter de The Odds API anuncia 500 créditos mensuales. Con un cron de 3 horas, el consumo máximo planificado es ~240 créditos en 30 días; además, el recolector deja una reserva de 40 créditos consultando la cabecera de cuota. Las cuotas se fusionan con las de ESPN Core en `assets/data/odds.json`, **no** se reemplazan las existentes. La clave nunca se incorpora al HTML ni al JSON publicado.
+
+**Falta configurar el secret para activar la integración**: repositorio → Settings → Secrets and variables → Actions → New repository secret → Name: `THE_ODDS_API_KEY` → pegar el valor. Más detalles en [Cuotas](docs/CUOTAS.md).
+
 ## Calendario automático
 
 - **Fútbol:** Premier League, La Liga, Serie A, Bundesliga, Ligue 1 y Primera División chilena.

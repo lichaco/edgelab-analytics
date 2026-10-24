@@ -35,6 +35,12 @@ jobs:
         run: |
           python3 scripts/build_public_odds.py
           python3 -m json.tool assets/data/odds.json > /dev/null
+      - name: Enriquecer player props con The Odds API (máximo 1 crédito por despliegue)
+        env:
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          python3 scripts/build_the_odds_api.py
+          python3 -m json.tool assets/data/odds.json > /dev/null
       - name: Preparar archivos estáticos
         run: |
           mkdir -p _site

@@ -1,4 +1,20 @@
-# Cuotas públicas en EdgeLab (v0.6)
+# Cuotas públicas y The Odds API en EdgeLab (v0.8)
+
+## The Odds API para player props
+
+El flujo de ESPN Core continúa funcionando sin clave. The Odds API es una integración **opcional** para obtener player props NBA/NHL. Configura un secret de Actions llamado `THE_ODDS_API_KEY`. Nunca escribas esa clave en README, HTML, JavaScript, tests, commits o URLs de páginas públicas.
+
+**Protocolo:** https://api.the-odds-api.com/v4 (distinto de odds-api.io y theoddsapi.com). El endpoint `/sports/{sport}/events` descubre eventos sin consumo de créditos. El endpoint `/sports/{sport}/events/{id}/odds` consulta un partido con `markets=<prop>`, `regions=us`, `oddsFormat=decimal`.
+
+**Control de gasto:** cada despliegue solicita como máximo un mercado de un solo encuentro, con coste máximo esperado de un crédito; se leen las cabeceras `x-requests-remaining` y `x-requests-last`. Se reserva un mínimo de 40 créditos; ante cuota desconocida se evita la solicitud de pago. El despliegue actual corre cada tres horas (~240 créditos/30 días de 30 días si siempre hay un mercado publicado). La API puede responder sin mercados disponibles; un status `market_not_available` no es error de autenticación.
+
+**Cobertura inicial:** NBA (`player_points`, `player_rebounds`, `player_assists`) y NHL (`player_shots_on_goal`, `player_points`), alternando un mercado por actualización. Estos precios se integran con ESPN Core en el mismo `odds.json`. Un fixture debe coincidir por fecha, liga, local y visita; si hay ambigüedad se omite. Se conservan las líneas y nombres de cada jugador y de cada casa, sin asumir probabilidades predictivas para props. El panel muestra `Sin modelo` hasta proporcionar estadísticas de jugadores.
+
+**Activación:** GitHub → `lichaco/edgelab-analytics` → Settings → Secrets and variables → Actions → New repository secret → `THE_ODDS_API_KEY`. Pega la clave en ese campo. Después, `Actions` → `Publicar EdgeLab en GitHub Pages` → Run workflow para activar una publicación; cron cada tres horas. El contenido del secret **no puede recuperarse** desde GitHub.
+
+**Seguimiento:** en `assets/data/odds.json`, `diagnostics.the_odds_api` contiene el estado, mercado consultado, props añadidas, créditos consumidos y restantes, sin revelar la clave. Una configuración ausente devuelve `not_configured`, sin afectar a ESPN Core. Comprueba las condiciones de redistribución de The Odds API antes de publicar las cuotas en un sitio público.
+
+Fuentes: [docs oficiales v4](https://the-odds-api.com/liveapi/guides/v4/), [mercados disponibles](https://the-odds-api.com/sports-odds-data/betting-markets.html), [planes](https://the-odds-api.com/).
 
 ## ¿Necesito pagar o tener una clave?
 **No.** El proveedor principal de EdgeLab es **ESPN Core**, con datos públicos de cuotas prepartido de casas que ESPN identifica en cada encuentro. No necesitas `ODDS_API_IO_KEY` ni otra cuenta.
@@ -31,7 +47,7 @@ En la primera consulta real del 24 de octubre de 2026, se revisaron **93 encuent
 - La primera cobertura real de 56/93 no representa un porcentaje garantizado en fechas futuras.
 - El recolector limita los partidos y las consultas por ciclo para evitar consultas masivas; no accede a cuentas de apuestas ni sortea bloqueos.
 - **La accesibilidad pública no equivale a autorización de reutilización o redistribución.** La web y el archivo JSON son públicos. Para un sitio comercial o redistribución amplia, se requiere verificar condiciones con los titulares de los datos o contratar una fuente licenciada.
-- CS2 y Euroliga continúan pendientes. Los player props de NBA/NHL/NFL no están automatizados con ESPN.
+- CS2 y Euroliga continúan pendientes. Los player props NBA/NHL se pueden enriquecer con The Odds API cuando el secret esté configurado; ESPN por sí solo no los garantiza.
 - El modelo Poisson de fútbol aún necesita calibración y evaluación histórica por competición.
 
 ## Archivos
@@ -39,6 +55,7 @@ En la primera consulta real del 24 de octubre de 2026, se revisaron **93 encuent
 | Archivo | Función |
 |---|---|
 | `scripts/build_public_odds.py` | Descarga y normaliza precios de ESPN sin clave |
+| `scripts/build_the_odds_api.py` | Enriquece con props NBA/NHL y controla el consumo de créditos |
 | `assets/js/odds-dashboard.mjs` | Tablero de cuotas, filtros dinámicos por casa y señales |
 | `assets/js/value-engine.mjs` | Compara probabilidades y mercados equivalentes |
 | `assets/js/calendar.mjs` | Muestra cuotas de referencia en las tarjetas de partidos |
