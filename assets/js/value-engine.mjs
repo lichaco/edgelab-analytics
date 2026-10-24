@@ -66,7 +66,7 @@ export function reportForEvent(event,fixture,history,modelFunctions){
     if(!(quote>1))continue;
     const analysis=assessQuote(m,side,quote,alt,rates,predictions);
     all.push({book,kind:m.kind,line:m.line,label:m.label||'',side,price:quote,
-       updated_at:m.updated_at||null,analysis});
+       updated_at:m.updated_at||null,source:m.source||event.source||null,analysis});
    }
   }
  }
