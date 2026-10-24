@@ -223,8 +223,7 @@ def build_snapshot(calendar, key, getter=None, clock=None):
         try:
             diagnostics["requests"] += 1
             boards = board_list(api_get("/odds/multi", {
-                "eventIds": ",".join(ids), "bookmakers": ",".join(BOOKS),
-                "markets": "ML,Totals,Spread,Player Props,Corners Totals,Bookings Totals"
+                "eventIds": ",".join(ids), "bookmakers": ",".join(BOOKS)
             }, key, getter))
         except Exception as exc:
             diagnostics["errors"].append("odds/multi: " + type(exc).__name__)
