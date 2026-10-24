@@ -16,6 +16,16 @@ Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y
 - **Fuente:** la API web pública/no oficial de ESPN, que puede cambiar o restringir el acceso. No se utiliza una clave privada en GitHub Pages. Si una liga no responde, la aplicación avisa y no inventa fechas.
 - Los modelos no tienen cuotas actuales automatizadas ni backtest/calibración suficientes para afirmar una ventaja real.
 
+## Cuotas y detección automática de valor
+
+La página contiene una sección **Cuotas automáticas**. Desde GitHub Actions se ejecuta `scripts/build_odds.py`, que obtiene mercados y precios de Betano y DraftKings de Odds-API.io, identifica los partidos del calendario y genera `assets/data/odds.json`. **No es necesario ingresar las cuotas manualmente.**
+
+Para activarlo, agrega en el repositorio **Settings > Secrets and variables > Actions** el secreto `ODDS_API_IO_KEY` con la clave que te entrega **Odds-API.io**, y después ejecuta manualmente **Actions > Publicar EdgeLab en GitHub Pages > Run workflow**. La clave de DunkAPI no sirve para esta integración.
+
+El detector aplica Poisson a 1X2 completo y goles de fútbol cuando hay histórico suficiente. En NBA/WNBA/NHL/NFL compara cotizaciones iguales de ambas casas, mostrando una **señal de precio relativa, no un modelo predictivo**. Las líneas que carezcan de modelo se muestran sin una probabilidad inventada. Los datos son instantáneas y no cotizaciones en vivo.
+
+Consulta los [detalles de seguridad, costes y limitaciones](docs/CUOTAS.md).
+
 ## Mercados
 
 | Módulo | Cobertura | Modelo inicial |
