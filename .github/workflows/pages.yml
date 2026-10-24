@@ -31,11 +31,9 @@ jobs:
         run: |
           python3 scripts/build_calendar.py
           python3 -m json.tool assets/data/calendar.json > /dev/null
-      - name: Obtener cuotas prepartido y calcular correspondencias
-        env:
-          ODDS_API_IO_KEY: ${{ secrets.ODDS_API_IO_KEY }}
+      - name: Obtener cuotas públicas gratuitas de ESPN
         run: |
-          python3 scripts/build_odds.py
+          python3 scripts/build_public_odds.py
           python3 -m json.tool assets/data/odds.json > /dev/null
       - name: Preparar archivos estáticos
         run: |
