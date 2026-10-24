@@ -24,6 +24,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 ODDS_PATH = ROOT / "assets" / "data" / "odds.json"
+CALENDAR_PATH = ROOT / "assets" / "data" / "calendar.json"
 OUT = ROOT / "assets" / "data" / "nba_official_predictions.json"
 CACHE = ROOT / ".edgelab-cache" / "nba-official-private.json"
 NBA_CDN = "https://cdn.nba.com/static/json"
@@ -339,7 +340,32 @@ def fetch_schedule(cache, clock, getter):
     return None, None
 
 
-def run(odds, cache, clock=None, getter=get_json):
+def preload_teams(calendar, clock, max_fixtures=2):
+    """Select up to four teams from the next two verifiable NBA fixtures."""
+    try:
+        from .build_dunkapi import TEAM_CODES
+    except ImportError:
+        from build_dunkapi import TEAM_CODES
+    fixtures = calendar.get("fixtures", []) if isinstance(calendar, dict) else []
+    eligible = []
+    for item in fixtures:
+        if not isinstance(item, dict) or item.get("sport") != "basket" or item.get("competitionId") != "nba":
+            continue
+        if item.get("status") != "pre":
+            continue
+        when = parse_date(item.get("utc"))
+        if when is None or not (clock < when <= clock + timedelta(hours=48)):
+            continue
+        codes = [TEAM_CODES.get(normalized(item.get("home"))), TEAM_CODES.get(normalized(item.get("away")))]
+        if len(set(codes)) != 2 or any(c is None for c in codes):
+            continue
+        eligible.append((when, set(codes)))
+    eligible.sort(key=lambda item: item[0])
+    chosen = eligible[:max_fixtures]
+    return set().union(*(teams for _, teams in chosen)) if chosen else set()
+
+
+def run(odds, cache, clock=None, getter=get_json, calendar=None):
     clock = clock or utcnow()
     cache = cache if isinstance(cache, dict) and cache.get("schema") == 1 else empty_cache()
     ds = {"status": "no_prop_markets", "candidate_players": 0, "boxscores_new": 0,
@@ -351,7 +377,9 @@ def run(odds, cache, clock=None, getter=get_json):
                       "Modelo exploratorio no calibrado y sin verificación de lesiones."}
     candidates = odds_candidates(odds, clock)
     ds["candidate_players"] = len(candidates)
-    if not candidates:
+    preload = set() if candidates else preload_teams(calendar, clock)
+    ds["preload_teams"] = len(preload)
+    if not candidates and not preload:
         return cache, output
     games, used = fetch_schedule(cache, clock, getter)
     if games is None:
@@ -359,7 +387,7 @@ def run(odds, cache, clock=None, getter=get_json):
         ds["errors"].append("El proveedor NBA rechazó o no respondió; se conserva DunkAPI si está activo.")
         return cache, output
     ds["schedule_source"] = used
-    want_teams = set().union(*(c["team_codes"] for c in candidates))
+    want_teams = set().union(*(c["team_codes"] for c in candidates)) if candidates else preload
     relevant = [g for g in games if g["home"] in want_teams or g["away"] in want_teams]
     ds["games_considered"] = len(relevant)
     if not relevant:
@@ -393,6 +421,10 @@ def run(odds, cache, clock=None, getter=get_json):
         if key not in keep:
             del boxscores[key]
     output["forecasts"] = assemble_predictions(candidates, games, cache, clock)
+    if not candidates:
+        ds["status"] = ("preload_ready" if ds["boxscores_new"] or ds["boxscores_cached"] else
+                        "nba_cdn_unavailable" if ds["errors"] else "no_final_games")
+        return cache, output
     ds["status"] = ("ok" if output["forecasts"] else
                     "insufficient_sample" if ds["boxscores_new"] or ds["boxscores_cached"] else
                     "nba_cdn_unavailable")
@@ -405,12 +437,14 @@ def main():
     if not ODDS_PATH.exists():
         raise SystemExit("Primero generar odds.json.")
     odds = json.loads(ODDS_PATH.read_text(encoding="utf-8"))
-    cache, snapshot = run(odds, load_cache())
+    calendar = json.loads(CALENDAR_PATH.read_text(encoding="utf-8")) if CALENDAR_PATH.exists() else None
+    cache, snapshot = run(odds, load_cache(), calendar=calendar)
     save_cache(cache)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(snapshot, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
     d = snapshot["diagnostics"]
     print("NBA OFFICIAL:", d["status"], "| candidates:", d["candidate_players"],
+          "| preload teams:", d.get("preload_teams", 0),
           "| new boxes:", d["boxscores_new"], "| cached boxes:", d["boxscores_cached"],
           "| forecasts:", len(snapshot["forecasts"]), "| errors:", len(d["errors"]))
 
