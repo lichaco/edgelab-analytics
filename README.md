@@ -12,6 +12,13 @@ Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y
 > **Estado v0.6:** calendario automático y cuotas de referencia gratuitas de ESPN Core integrados con GitHub Pages. Actualmente se identifican precios de DraftKings donde están publicados. El modelo de fútbol sigue siendo experimental y las probabilidades no están calibradas como predicciones rentables.
 
 
+## Estadísticas oficiales NBA (v1.0)
+
+**Fuente principal para NBA:** endpoints públicos usados por NBA.com en `cdn.nba.com` (calendario oficial y box scores definitivos). Se extraen hasta los diez partidos recientes de un jugador, con puntos, rebotes, asistencias, triples y minutos; se exige muestra mínima de cinco juegos. Los históricos brutos se cachean internamente en GitHub Actions; **solo se publican probabilidades derivadas**.
+
+Se combinan con cuotas reales de **The Odds API** por evento, jugador, casa y línea; DunkAPI continúa como **respaldo** si las fuentes NBA no responden o hay muestra insuficiente. Este acceso NBA no requiere clave, pero los endpoints son **no oficiales para terceros**, pueden responder HTTP 403 y no garantizan cobertura desde GitHub Actions. Al comienzo de la temporada puede faltar un mínimo de cinco juegos y el modelo muestra *sin muestra suficiente*, sin inventar predicciones.
+
+Consulta [Fuentes NBA oficiales, límites y estados](docs/NBA_OFICIAL.md). Los pronósticos siguen siendo experimentales y no están calibrados fuera de muestra.
 ## DunkAPI — proyecciones NBA con la cuenta gratuita (v0.9)
 
 Se puede activar **DunkAPI** mediante el secreto de GitHub Actions `DUNKAPI_API_KEY` (cuenta gratuita: 500 créditos/mes). EdgeLab cruza los player props Over >1.80 de The Odds API con estadísticas y minutos recientes de DunkAPI, calcula una probabilidad **exploratoria**, cuota justa, EV y advertencias por lesiones/minutos y blowout no cuantificado.
