@@ -87,7 +87,12 @@ def price(value):
     return None
 
 def quote_choices(row, keys):
-    return {k: v for k in keys if (v := price(row.get(k))) is not None}
+    found = {}
+    for key in keys:
+        value = price(row.get(key))
+        if value is not None:
+            found[key] = value
+    return found
 
 def normalized_markets(market, sport):
     name = str(market.get("name", "")).strip()
@@ -114,7 +119,7 @@ def normalized_markets(market, sport):
     for row in rows[:250]:
         if not isinstance(row, dict):
             continue
-        choices = quote_choices(row, (("home", "home"), ("draw", "draw"), ("away", "away")) if kind == "result" or kind == "spread" else (("over", "over"), ("under", "under")))
+        choices = quote_choices(row, ("home", "draw", "away") if kind == "result" or kind == "spread" else ("over", "under"))
         if not choices:
             continue
         try:
