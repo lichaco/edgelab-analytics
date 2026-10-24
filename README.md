@@ -1,5 +1,12 @@
 # EdgeLab Analytics
 
+## Nuevo: laboratorio de análisis con fuentes (v0.7, pendiente de revisión)
+
+Se incorpora un módulo que importa observaciones JSON de **goles, córners, tarjetas, player props NBA/NHL y BO3 CS2**. Calcula probabilidad, cuota implícita, cuota justa y valor esperado, con avisos de lesiones, minutos, tiempo en hielo, antigüedad de cuotas y escenarios de veto. Para fútbol, el módulo previo sigue calculando **1X2** y Over de goles.
+
+**No está conectado automáticamente a ChatGPT, HLTV ni a proveedores de props.** Requiere observaciones y cuotas fechadas, verificables, obtenidas de fuentes con permiso de uso. Tampoco incluye automáticamente todas las cifras de conversaciones anteriores. Se puede descargar una plantilla desde la web. Consulta [metodología, fuentes y formato](docs/ANALISIS_CHAT.md).
+
+
 Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y JavaScript**, sin framework ni dependencias de ejecución.
 
 > **Estado v0.6:** calendario automático y cuotas de referencia gratuitas de ESPN Core integrados con GitHub Pages. Actualmente se identifican precios de DraftKings donde están publicados. El modelo de fútbol sigue siendo experimental y las probabilidades no están calibradas como predicciones rentables.
