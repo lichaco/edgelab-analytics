@@ -1,0 +1,43 @@
+:root{--calendar-tone:#3be39d}
+#calendar{margin:16px 0;--calendar-tone:#3be39d;overflow:hidden}
+#calendar[data-sport="basket"]{--calendar-tone:#ff9b54}
+#calendar[data-sport="cs2"]{--calendar-tone:#f7d765}
+#calendar[data-sport="nhl"]{--calendar-tone:#66c7ef}
+#calendar[data-sport="nfl"]{--calendar-tone:#c2a4ff}
+.calendar-head{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+.calendar-head h3{font-size:20px;margin:0 0 5px}
+.calendar-head p{margin:0;color:#9eb1c5;font-size:13px}
+.calendar-controls{display:grid;grid-template-columns:minmax(150px,1fr) 130px minmax(140px,1fr) auto;gap:12px;align-items:end;margin-top:17px}
+.calendar-controls .field select,.calendar-controls .field input{height:43px}
+#calendarRefresh{height:43px}
+.calendar-days{display:flex;gap:7px;overflow:auto;scrollbar-width:thin;padding:17px 0 12px}
+.calendar-day{border:1px solid #304255;background:#101a25;color:#a8bdcf;padding:10px 12px;min-width:78px;border-radius:11px;font-size:12px;white-space:nowrap}
+.calendar-day.selected{border-color:var(--calendar-tone);color:#effbff;background:#1b3336}
+.calendar-status{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;color:#9fb3c7;font-size:12px;padding-bottom:12px;border-bottom:1px solid #2a3948}
+#calendarCount{color:#f1f6ff;font-weight:700}
+#calendarStatus[data-tone=warning]{color:#f8c981}
+#calendarStatus[data-tone=success]{color:#70d5b8}
+#calendarList{max-height:780px;overflow:auto}
+.calendar-group{margin-top:15px}
+.calendar-group-title{font-size:13px;font-weight:600;color:#bfd0e1;margin:8px 0 11px;text-transform:capitalize}
+.calendar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.calendar-match{border-radius:12px;border:1px solid #304356;background:#0d1824;padding:13px 15px}
+.calendar-match:hover{border-color:var(--calendar-tone)}
+.calendar-match-meta{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#95aabd}
+.calendar-match-meta time{font-weight:700;color:var(--calendar-tone)}
+.calendar-names{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:14px 0;font-size:14px}
+.calendar-names strong{flex:1;overflow-wrap:anywhere;min-width:0}
+.calendar-names strong:last-child{text-align:right}
+.calendar-names small{color:#7790a2}
+.calendar-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #293747;padding-top:10px;color:#90a5b6;font-size:11px}
+.calendar-bottom .btn{font-size:12px;padding:7px 11px;border-color:var(--calendar-tone)}
+.calendar-blank{padding:30px 12px;text-align:center;border:1px dashed #3b4d60;border-radius:11px;color:#b4c1cc}
+#calendarForecast:not([hidden]){margin-top:16px;border:1px solid var(--calendar-tone);border-radius:12px;background:#12232a;padding:16px;color:#c6dae7}
+.calendar-prob-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0}
+.calendar-prob{display:flex;flex-direction:column;gap:8px;border:1px solid #31465a;background:#111c2a;border-radius:9px;padding:12px}
+.calendar-prob span,.calendar-prob small{color:#9ab1c4;font-size:11px}
+.calendar-prob b{font-size:21px;color:var(--calendar-tone)}
+.calendar-note,.calendar-disclaimer{font-size:11px;color:#9caebf;line-height:1.5}
+.calendar-disclaimer{margin:15px 0 0}
+@media(max-width:820px){.calendar-controls{grid-template-columns:1fr 1fr}.calendar-grid{grid-template-columns:1fr}.calendar-prob-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.calendar-controls .field:first-child,.calendar-controls .field:nth-child(3){grid-column:1/-1}.calendar-head .pill{display:none}.calendar-names{font-size:13px}}
