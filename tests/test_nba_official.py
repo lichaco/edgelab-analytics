@@ -141,6 +141,34 @@ class NBAOfficialTests(unittest.TestCase):
         self.assertEqual(snap["diagnostics"]["status"], "insufficient_sample")
         self.assertEqual(snap["forecasts"], [])
 
+    def test_preload_official_stats_without_nba_odds(self):
+        calendar = {"fixtures": [
+            {"sport": "basket", "competitionId": "nba", "status": "pre",
+             "utc": "2026-10-25T23:30:00Z", "home": "New York Knicks",
+             "away": "Boston Celtics"},
+        ]}
+        seen = []
+        def fake_get(path):
+            seen.append(path)
+            if path.startswith("staticData/"):
+                return schedule()
+            gid = path.removeprefix("liveData/boxscore/boxscore_").removesuffix(".json")
+            match = next(g for g in schedule_games(schedule(), CLOCK) if g["id"] == gid)
+            return boxscore(match)
+        cache, snap = run({"events": []}, empty_cache(), CLOCK, getter=fake_get,
+                          calendar=calendar)
+        self.assertEqual(snap["diagnostics"]["status"], "preload_ready")
+        self.assertEqual(snap["diagnostics"]["candidate_players"], 0)
+        self.assertEqual(snap["diagnostics"]["preload_teams"], 2)
+        self.assertEqual(snap["diagnostics"]["boxscores_new"], 6)
+        self.assertEqual(snap["forecasts"], [])  # no market -> no invented probability
+        seen.clear()
+        cache, again = run({"events": []}, cache, CLOCK + timedelta(hours=1),
+                           getter=fake_get, calendar=calendar)
+        self.assertEqual(again["diagnostics"]["status"], "preload_ready")
+        self.assertEqual(again["diagnostics"]["boxscores_cached"], 6)
+        self.assertEqual(seen, [])
+
     def test_outside_window_has_no_network(self):
         _, snap = run({"events": []}, empty_cache(), CLOCK, getter=lambda _p: 1/0)
         self.assertEqual(snap["diagnostics"]["status"], "no_prop_markets")
