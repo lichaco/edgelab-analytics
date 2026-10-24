@@ -9,7 +9,7 @@ const $=id=>document.getElementById(id);
 const make=(tag,value,cls)=>{const e=document.createElement(tag);if(value!==null)e.textContent=String(value);if(cls)e.className=cls;return e};
 const panel=make('section',null,'panel odds-panel');
 panel.id='autoOdds';
-panel.innerHTML='<div class="sectionhead"><div><h3>📈 Cuotas automáticas y detector de valor</h3><p class="desc">DraftKings · Betano · emparejamiento por equipos y horario</p></div><span class="pill">Actualización programada</span></div><div class="odds-filters"><label>Casa <select id="oddsBook"><option value="">Ambas</option><option value="DraftKings">DraftKings</option><option value="Betano">Betano</option></select></label><label>Mercado <select id="oddsMarket"><option value="">Todos</option><option value="result">Ganador</option><option value="goals">Goles</option><option value="totals">Totales</option><option value="prop">Props</option><option value="spread">Hándicap</option><option value="corners">Córners</option><option value="cards">Tarjetas</option></select></label></div><div id="oddsNotice" role="status" class="odds-notice">Comprobando cuotas…</div><div class="odds-stats"><span id="oddsEventCount">0 partidos con cuotas</span><span id="oddsSignalCount">0 señales</span></div><div id="oddsSignals"></div><details class="odds-all"><summary>Ver todas las cuotas disponibles por partido</summary><div id="oddsBoards"></div></details><p class="odds-footnote">EV modelo: probabilidad Poisson × cuota − 1. Comparación entre casas: precio frente a probabilidad sin margen de la otra casa, no equivale a pronóstico validado. Cuotas diferidas, no en vivo; pueden cambiar.</p>';
+panel.innerHTML='<div class="sectionhead"><div><h3>📈 Cuotas automáticas y detector de valor</h3><p class="desc">ESPN Core · casas publicadas para cada encuentro · sin clave de pago</p></div><span class="pill">Actualización programada</span></div><div class="odds-filters"><label>Casa <select id="oddsBook"><option value="">Todas las casas disponibles</option></select></label><label>Mercado <select id="oddsMarket"><option value="">Todos</option><option value="result">Ganador</option><option value="goals">Goles</option><option value="totals">Totales</option><option value="prop">Props</option><option value="spread">Hándicap</option><option value="corners">Córners</option><option value="cards">Tarjetas</option></select></label></div><div id="oddsNotice" role="status" class="odds-notice">Comprobando cuotas…</div><div class="odds-stats"><span id="oddsEventCount">0 partidos con cuotas</span><span id="oddsSignalCount">0 señales</span></div><div id="oddsSignals"></div><details class="odds-all"><summary>Ver todas las cuotas disponibles por partido</summary><div id="oddsBoards"></div></details><p class="odds-footnote">EV modelo: probabilidad Poisson × cuota − 1. Comparación entre casas: precio frente a probabilidad sin margen de la otra casa, no equivale a pronóstico validado. Cuotas referenciales de ESPN Core: pueden ser limitadas, diferidas o dejar de estar disponibles. No son precios ejecutables.</p>';
 document.getElementById('calendar')?.insertAdjacentElement('afterend',panel);
 let sport='football',odds=null,calendar=null,focusFixture='',loadedAt=0;
 const active=()=>Number.isFinite(loadedAt)&&Date.now()-loadedAt<8*3600*1000;
@@ -60,10 +60,10 @@ function render(){
  $('oddsSignalCount').textContent=signals.length+' señales detectadas';
  const diag=odds.diagnostics||{};
  const stamp='Instantánea '+dateChile(odds.generated_at)+' CL';
- if(diag.status==='not_configured')note('Falta configurar ODDS_API_IO_KEY en GitHub Secrets. Sin clave válida no se publican cuotas.','warning');
+ if(diag.status==='not_configured')note('No hay datos públicos de cuotas todavía; no hace falta contratar ni configurar una API.','warning');
  else if(!active())note(stamp+'. Datos superiores a 8 horas: señales desactivadas hasta próxima actualización.','warning');
- else if(!all.length)note(stamp+'. No se encontraron cuotas emparejadas para este deporte. Estado: '+(diag.status||'sin datos')+'.','warning');
- else note(stamp+' · '+chosen.length+' partidos. Cuotas sujetas a cambios.',diag.status==='ok'?'success':'warning');
+ else if(!all.length)note(stamp+'. ESPN no publica cuotas verificables para los próximos partidos de este deporte. No se inventarán precios.','warning');
+ else note(stamp+' · '+chosen.length+' partidos · '+(odds.provider||'fuente pública')+'. Verifica siempre la cotización vigente.',diag.status==='ok'?'success':'warning');
  const root=$('oddsSignals');root.replaceChildren();
  if(focusFixture){
   const button=make('button','Mostrar todos los partidos','btn');button.type='button';
@@ -109,7 +109,13 @@ async function load(){
  ]);
  if(a.status!=='fulfilled'||b.status!=='fulfilled'){note('No se han publicado datos de cuotas o calendario; revisa el despliegue de GitHub Actions.','warning');return;}
  if(!Array.isArray(a.value?.events)||!Array.isArray(b.value?.fixtures)){note('La respuesta de cuotas no tiene el formato esperado.','warning');return;}
- odds=a.value;calendar=b.value;loadedAt=Date.parse(odds.generated_at);render();
+ odds=a.value;calendar=b.value;loadedAt=Date.parse(odds.generated_at);
+ const select=$('oddsBook'),previous=select.value,books=[...new Set(odds.events.flatMap(ev=>Object.keys(ev.books||{})))].sort();
+ select.replaceChildren(new Option('Todas las casas disponibles',''));
+ for(const name of books)select.add(new Option(name,name));
+ if(books.includes(previous))select.value=previous;
+ window.dispatchEvent(new CustomEvent('edgelab:odds-loaded',{detail:{events:odds.events,generated_at:odds.generated_at}}));
+ render();
 }
 for(const id of ['oddsBook','oddsMarket'])$(id).addEventListener('change',render);
 window.addEventListener('edgelab:sport-change',e=>{if(e.detail?.sport){sport=e.detail.sport;focusFixture='';render();}});
