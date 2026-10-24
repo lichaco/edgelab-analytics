@@ -41,6 +41,19 @@ jobs:
         run: |
           python3 scripts/build_the_odds_api.py
           python3 -m json.tool assets/data/odds.json > /dev/null
+      - name: Recuperar caché interna DunkAPI (NO publicada en Pages)
+        uses: actions/cache@v4
+        with:
+          path: .edgelab-cache/dunkapi-private.json
+          key: ${{ runner.os }}-dunkapi-v1-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-dunkapi-v1-
+      - name: Modelar NBA con DunkAPI (máximo 14 créditos por día de actualización)
+        env:
+          DUNKAPI_API_KEY: ${{ secrets.DUNKAPI_API_KEY }}
+        run: |
+          python3 scripts/build_dunkapi.py
+          python3 -m json.tool assets/data/nba_predictions.json > /dev/null
       - name: Preparar archivos estáticos
         run: |
           mkdir -p _site
