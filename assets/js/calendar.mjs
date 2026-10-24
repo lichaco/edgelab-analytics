@@ -5,6 +5,7 @@ const plus=(d,n)=>new Date(d.getTime()+n*86400000);
 const pct=p=>(100*p).toLocaleString('es-CL',{maximumFractionDigits:1,minimumFractionDigits:1})+'%';
 const fmt=(d,options)=>new Intl.DateTimeFormat('es-CL',Object.assign({timeZone:'America/Santiago'},options)).format(d);
 let sport='football',fixtures=[],chosenDate='',sequence=0,snapshot=null;
+let oddsByFixture=new Map();
 const directCache=new Map();
 function clear(node){node.replaceChildren()}
 function elem(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
@@ -51,7 +52,22 @@ function render(){
    bottom.append(elem('span','',f.source||'Fuente pública'));
    const b=elem('button','btn',f.utc?'Analizar ↗':'Pendiente de horario');b.type='button';
    if(f.utc)b.dataset.index=String(fixtures.indexOf(f));else {b.disabled=true;b.title='La fuente aún no publica una hora de inicio verificable'}
-   bottom.append(b);card.append(meta,names,bottom);grid.append(card);
+   bottom.append(b);
+   const listed=oddsByFixture.get(f.id);
+   if(listed){
+    const available=Object.entries(listed.books||{});
+    const market=available.flatMap(([book,ms])=>ms.filter(x=>x.kind==='result').map(m=>({book,m}))).find(x=>x.m.selections?.home&&x.m.selections?.away);
+    const oddsLine=elem('div','calendar-odds-line');
+    if(market){
+     const a=market.m.selections;
+     const pieces=[market.book,'Local '+a.home.toFixed(2)];
+     if(a.draw)pieces.push('X '+a.draw.toFixed(2));
+     pieces.push('Visita '+a.away.toFixed(2));
+     oddsLine.textContent='Cuotas referencia: '+pieces.join(' · ');
+    }else oddsLine.textContent='Cuotas de referencia de '+available.map(([book])=>book).join(' / ');
+    card.append(meta,names,oddsLine,bottom);
+   }else card.append(meta,names,bottom);
+   grid.append(card);
   }
   group.append(grid);container.append(group);
  }
@@ -151,5 +167,9 @@ el('calendarLeague').addEventListener('change',render);
 el('calendarQuery').addEventListener('input',render);
 el('calendarDaysStrip').addEventListener('click',e=>{const b=e.target.closest('button[data-day]');if(!b)return;chosenDate=b.dataset.day;render()});
 el('calendarList').addEventListener('click',e=>{const b=e.target.closest('button[data-index]');if(b)choose(b.dataset.index)});
+window.addEventListener('edgelab:odds-loaded',e=>{
+ oddsByFixture=new Map((e.detail?.events||[]).map(ev=>[ev.fixture_id,ev]));
+ render();
+});
 window.addEventListener('edgelab:sport-change',e=>{if(e.detail?.sport)changeSport(e.detail.sport)});
 changeSport('football');
