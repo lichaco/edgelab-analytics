@@ -12,6 +12,13 @@ Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y
 > **Estado v0.6:** calendario automático y cuotas de referencia gratuitas de ESPN Core integrados con GitHub Pages. Actualmente se identifican precios de DraftKings donde están publicados. El modelo de fútbol sigue siendo experimental y las probabilidades no están calibradas como predicciones rentables.
 
 
+## DunkAPI — proyecciones NBA con la cuenta gratuita (v0.9)
+
+Se puede activar **DunkAPI** mediante el secreto de GitHub Actions `DUNKAPI_API_KEY` (cuenta gratuita: 500 créditos/mes). EdgeLab cruza los player props Over >1.80 de The Odds API con estadísticas y minutos recientes de DunkAPI, calcula una probabilidad **exploratoria**, cuota justa, EV y advertencias por lesiones/minutos y blowout no cuantificado.
+
+El plan gratuito se controla con una caché de Actions y un máximo de dos jugadores nuevos por día. **No se publica el histórico bruto de DunkAPI**: solo pronósticos derivados, sujetos a requisitos de muestra y frescura. El sistema no consulta DunkAPI si no hay cuota NBA compatible ni credenciales.
+
+Para activar la clave, revisar costos y límites, consulta [Guía DunkAPI](docs/DUNKAPI.md). Las proyecciones no están calibradas ni garantizan ganancias.
 ## The Odds API — player props gratuitos (v0.8)
 
 Se añadió `scripts/build_the_odds_api.py` al despliegue de GitHub Pages. Si existe el **secret** `THE_ODDS_API_KEY`, cada actualización consulta los endpoints de eventos gratuitos y realiza como máximo **una** consulta de cuotas de un evento / un mercado / una región (coste máximo esperado: 1 crédito). Alterna entre **NBA: puntos, rebotes, asistencias** y **NHL: tiros a portería, puntos**; sin evento coincidente o sin mercado publicado no se inventan cuotas.

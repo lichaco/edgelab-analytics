@@ -1,5 +1,9 @@
 # Cuotas públicas y The Odds API en EdgeLab (v0.8)
 
+## DunkAPI: estadísticas para los player props NBA
+
+Además de The Odds API, el motor NBA puede conectarse a **DunkAPI** por `DUNKAPI_API_KEY` (secreto independiente). Se importan hasta dos perfiles diarios con los últimos diez juegos y reporte de lesiones, para estimar probabilidades y riesgos. No publica los datos brutos del proveedor y no mezcla porcentajes implícitos del bookmaker con probabilidades predictivas. El saldo gratuito es de 500 créditos/mes; su actualización se limita a un máximo nominal de 14 créditos diarios. Consulta [Guía de instalación DunkAPI](DUNKAPI.md).
+
 ## The Odds API para player props
 
 El flujo de ESPN Core continúa funcionando sin clave. The Odds API es una integración **opcional** para obtener player props NBA/NHL. Configura un secret de Actions llamado `THE_ODDS_API_KEY`. Nunca escribas esa clave en README, HTML, JavaScript, tests, commits o URLs de páginas públicas.
