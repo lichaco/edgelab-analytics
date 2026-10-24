@@ -2,7 +2,19 @@
 
 Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y JavaScript**, sin framework ni dependencias de ejecución.
 
-> **Estado:** prototipo funcional de escenarios matemáticos manuales. No contiene un modelo entrenado ni conexión con proveedores de datos/odds. No se deben interpretar las probabilidades como pronósticos validados.
+> **Estado v0.3:** calendario automático de partidos, basado en los endpoints públicos (no oficiales) de ESPN. Incluye un estimador Poisson experimental para fútbol cuando hay suficiente histórico. **No** hay cuotas en directo ni modelos de props validados; no se deben interpretar los porcentajes como pronósticos calibrados.
+
+
+## Calendario automático
+
+- **Fútbol:** Premier League, La Liga, Serie A, Bundesliga, Ligue 1 y Primera División chilena.
+- **Básquetbol:** NBA y WNBA (Euroliga pendiente de proveedor).
+- **NHL y NFL:** encuentros futuros.
+- **CS2:** el calendario sigue pendiente de una fuente licenciada para uso analítico relacionado con apuestas; no se inventan torneos.
+- Puedes filtrar por deporte, liga, equipos y horizonte de 7, 14 o 30 días. Los horarios se convierten a **America/Santiago** y los encuentros iniciados se excluyen.
+- Seleccionar **Analizar** autocompleta evento y fecha en el formulario. Para fútbol intenta estimar λ local/visita, 1X2 y Over 2,5 con resultados anteriores; para props de NBA/WNBA/NHL/NFL falta introducir estadísticas del jugador hasta conectar un proveedor.
+- **Fuente:** la API web pública/no oficial de ESPN, que puede cambiar o restringir el acceso. No se utiliza una clave privada en GitHub Pages. Si una liga no responde, la aplicación avisa y no inventa fechas.
+- Los modelos no tienen cuotas actuales automatizadas ni backtest/calibración suficientes para afirmar una ventaja real.
 
 ## Mercados
 
@@ -23,7 +35,7 @@ Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y
    ```
 
 2. Entra en <http://localhost:8000>.
-3. Elige deporte, introduce **estadísticas verificadas** y **cuota decimal**, y registra un evento futuro.
+3. Elige deporte y selecciona un partido futuro en el **calendario automático**; no necesitas escribir los equipos ni la fecha. Completa el mercado y la cuota decimal si deseas guardar una selección.
 4. Exporta tus análisis a CSV o JSON. Los datos permanecen en el `localStorage` de *ese navegador* y *ese origen*; no se sincronizan con GitHub ni con otros dispositivos.
 
 ## Publicar cambios en GitHub
@@ -66,7 +78,7 @@ Si no necesitas mantener el sitio privado, configura **Settings → Pages → De
 - **No publiques claves API** en JS, HTML, commits, `.env`, tickets ni archivos de exportación.
 - `.gitignore` evita incluir `.env` y `private-data/`, pero comprueba siempre el resultado de `git status`.
 - GitHub Pages **no** ejecuta un backend Python ni puede almacenar claves de proveedor en secreto: para estadísticas y cuotas reales necesitaremos una API backend protegida.
-- En su estado actual las cuotas/proyecciones son manuales; no existe ingestión automática.
+- Los partidos se obtienen automáticamente, pero las cuotas continúan siendo manuales; no se muestran odds ficticias.
 
 ## Documentación
 
