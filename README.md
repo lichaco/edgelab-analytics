@@ -2,7 +2,7 @@
 
 Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y JavaScript**, sin framework ni dependencias de ejecución.
 
-> **Estado v0.3:** calendario automático de partidos, basado en los endpoints públicos (no oficiales) de ESPN. Incluye un estimador Poisson experimental para fútbol cuando hay suficiente histórico. **No** hay cuotas en directo ni modelos de props validados; no se deben interpretar los porcentajes como pronósticos calibrados.
+> **Estado v0.6:** calendario automático y cuotas de referencia gratuitas de ESPN Core integrados con GitHub Pages. Actualmente se identifican precios de DraftKings donde están publicados. El modelo de fútbol sigue siendo experimental y las probabilidades no están calibradas como predicciones rentables.
 
 
 ## Calendario automático
@@ -14,17 +14,19 @@ Panel personal de análisis deportivo, construido inicialmente con **HTML, CSS y
 - Puedes filtrar por deporte, liga, equipos y horizonte de 7, 14 o 30 días. Los horarios se convierten a **America/Santiago** y los encuentros iniciados se excluyen.
 - Seleccionar **Analizar** autocompleta evento y fecha en el formulario. Para fútbol intenta estimar λ local/visita, 1X2 y Over 2,5 con resultados anteriores; para props de NBA/WNBA/NHL/NFL falta introducir estadísticas del jugador hasta conectar un proveedor.
 - **Fuente:** la API web pública/no oficial de ESPN, que puede cambiar o restringir el acceso. No se utiliza una clave privada en GitHub Pages. Si una liga no responde, la aplicación avisa y no inventa fechas.
-- Los modelos no tienen cuotas actuales automatizadas ni backtest/calibración suficientes para afirmar una ventaja real.
+- Las cuotas de referencia se cargan automáticamente cuando ESPN las publica. Los modelos aún carecen de calibración suficiente para afirmar una ventaja real.
 
-## Cuotas y detección automática de valor
+## Cuotas de referencia sin API de pago
 
-La página contiene una sección **Cuotas automáticas**. Desde GitHub Actions se ejecuta `scripts/build_odds.py`, que obtiene mercados y precios de Betano y DraftKings de Odds-API.io, identifica los partidos del calendario y genera `assets/data/odds.json`. **No es necesario ingresar las cuotas manualmente.**
+**Funcionando sin clave:** GitHub Actions ejecuta `scripts/build_public_odds.py` y consulta el feed público no oficial **ESPN Core**. El resultado se publica como `assets/data/odds.json` junto con el calendario. En la primera ejecución verificada se obtuvieron cuotas de **DraftKings para 56 de 93 partidos considerados**. La cobertura puede variar en cada actualización.
 
-Para activarlo, agrega en el repositorio **Settings > Secrets and variables > Actions** el secreto `ODDS_API_IO_KEY` con la clave que te entrega **Odds-API.io**, y después ejecuta manualmente **Actions > Publicar EdgeLab en GitHub Pages > Run workflow**. La clave de DunkAPI no sirve para esta integración.
+El navegador muestra la casa, cuotas en formato decimal, mercados disponibles y fecha de la instantánea. También muestra cuotas en las tarjetas de partido. Para fútbol, compara líneas 1X2 (solo si hay precio de empate) y totales de goles con el modelo Poisson cuando hay suficiente histórico. Sin modelo independiente, **no inventa valor ni porcentaje de acierto**.
 
-El detector aplica Poisson a 1X2 completo y goles de fútbol cuando hay histórico suficiente. En NBA/WNBA/NHL/NFL compara cotizaciones iguales de ambas casas, mostrando una **señal de precio relativa, no un modelo predictivo**. Las líneas que carezcan de modelo se muestran sin una probabilidad inventada. Los datos son instantáneas y no cotizaciones en vivo.
+No necesitas `ODDS_API_IO_KEY`. Conservamos el colector comercial anterior `scripts/build_odds.py` como alternativa **no activada**, para un eventual futuro con más mercados y Player Props. La actualización gratuita se ejecuta normalmente cada 3 horas.
 
-Consulta los [detalles de seguridad, costes y limitaciones](docs/CUOTAS.md).
+Los feeds ESPN son públicos **pero no oficiales ni garantizados**, y su accesibilidad no implica licencia de redistribución. La página es pública; revisar derechos de uso antes de convertirla en un producto comercial.
+
+Consulta [fuente, límites, validaciones y funcionamiento](docs/CUOTAS.md).
 
 ## Mercados
 
