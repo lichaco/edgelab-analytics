@@ -1,5 +1,5 @@
-/** Normalización de calendarios de ESPN (API pública no oficial, sin credenciales). */
-export const LEAGUES = {
+/** EdgeLab calendar: daily ESPN API queries, no unsupported date-range requests. */
+export const LEAGUES={
  football:[
   {id:'eng.1',label:'Premier League',path:'soccer'},
   {id:'esp.1',label:'La Liga',path:'soccer'},
@@ -21,9 +21,12 @@ export function localDateTime(date){
  return p.year+'-'+p.month+'-'+p.day+'T'+p.hour+':'+p.minute;
 }
 export const dayChile=date=>localDateTime(date).slice(0,10);
-export function scoreboardURL(league,start,end){
- if(!Object.values(LEAGUES).flat().some(l=>l.id===league.id&&l.path===league.path))throw Error('Competencia desconocida');
- return 'https://site.api.espn.com/apis/site/v2/sports/'+league.path+'/'+league.id+'/scoreboard?dates='+ymd(start)+'-'+ymd(end)+'&limit=500';
+export const dateOfFixture=f=>f.utc?dayChile(new Date(f.utc)):f.date;
+export function scoreboardURL(league,day){
+ if(!Object.values(LEAGUES).flat().some(l=>l.id===league?.id&&l.path===league?.path))throw Error('Competencia desconocida');
+ if(!(day instanceof Date)||Number.isNaN(day.getTime()))throw Error('Fecha de consulta inválida');
+ // ESPN broke YYYYMMDD-YYYYMMDD date-range queries in September 2026.
+ return `https://site.api.espn.com/apis/site/v2/sports/${league.path}/${league.id}/scoreboard?dates=${ymd(day)}&limit=300`;
 }
 export function parseScoreboard(payload,league){
  if(!Array.isArray(payload?.events))throw Error('Respuesta de calendario no válida');
@@ -36,29 +39,56 @@ export function parseScoreboard(payload,league){
   const score=x=>{const v=x?.score;if(v===undefined||v===null||String(v).trim()==='')return null;const n=Number(v);return Number.isInteger(n)&&n>=0&&n<40?n:null};
   return [{id:String(e.id),competitionId:league.id,league:league.label,
    sport:league.path==='soccer'?'football':league.path==='basketball'?'basket':league.id,
-   home:h.team.displayName,away:a.team.displayName,utc:new Date(ts).toISOString(),
-   status,finished,hg:finished?score(h):null,ag:finished?score(a):null}];
+   home:h.team.displayName,away:a.team.displayName,utc:new Date(ts).toISOString(),date:new Date(ts).toISOString().slice(0,10),
+   status,finished,hg:finished?score(h):null,ag:finished?score(a):null,source:'ESPN'}];
  });
 }
 export function futureOnly(matches,now=new Date()){
- const seen=new Set();
+ const seen=new Set(),today=dayChile(now);
  return matches.filter(e=>{
-  if(e.finished||e.status!=='pre'||Date.parse(e.utc)<=now.getTime())return false;
+  if(!e||e.finished||e.status!=='pre')return false;
+  // Unknown kick-off: show date only if it is strictly a future calendar day.
+  if(!e.utc){if(!e.timeTBD||!e.date||e.date<=today)return false}
+  else if(!Number.isFinite(Date.parse(e.utc))||Date.parse(e.utc)<=now.getTime())return false;
   const key=e.competitionId+'/'+e.id;
   if(seen.has(key))return false;
   seen.add(key);return true;
- }).sort((a,b)=>a.utc.localeCompare(b.utc));
+ }).sort((a,b)=>(a.utc||a.date+'T23:59:59').localeCompare(b.utc||b.date+'T23:59:59'));
 }
 export function historyOnly(matches,now=new Date()){
  const today=dayChile(now);
- return matches.filter(e=>e.finished&&e.hg!==null&&e.ag!==null&&dayChile(new Date(e.utc))<today)
+ return matches.filter(e=>e.finished&&e.hg!==null&&e.ag!==null&&e.utc&&dayChile(new Date(e.utc))<today)
   .map(e=>({date:dayChile(new Date(e.utc)),home:e.home,away:e.away,hg:e.hg,ag:e.ag}));
 }
+export function daysInclusive(start,end,max=34){
+ const a=Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate());
+ const b=Date.UTC(end.getUTCFullYear(),end.getUTCMonth(),end.getUTCDate());
+ const count=Math.floor((b-a)/86400000)+1;
+ if(!Number.isInteger(count)||count<1||count>max)throw Error('Intervalo de fechas inválido o demasiado amplio');
+ return Array.from({length:count},(_,i)=>new Date(a+i*86400000));
+}
 export async function fetchLeague(league,start,end,fetcher=fetch){
- const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),18000);
- try{
-  const response=await fetcher(scoreboardURL(league,start,end),{signal:ctl.signal});
-  if(!response.ok)throw Error('ESPN HTTP '+response.status);
-  return parseScoreboard(await response.json(),league);
- }finally{clearTimeout(timer)}
+ const days=daysInclusive(start,end),results=[],errors=[];let ok=0;
+ // Rate-controlled batches: unlike the former broken single range query.
+ for(let k=0;k<days.length;k+=5){
+  const chunk=days.slice(k,k+5);
+  const responses=await Promise.allSettled(chunk.map(async d=>{
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+   try{
+    const r=await fetcher(scoreboardURL(league,d),{signal:controller.signal});
+    if(!r.ok)throw Error('HTTP '+r.status);
+    return parseScoreboard(await r.json(),league);
+   }finally{clearTimeout(timer)}
+  }));
+  for(let i=0;i<responses.length;i++){
+   const result=responses[i];
+   if(result.status==='fulfilled'){ok++;results.push(...result.value)}
+   else errors.push(ymd(chunk[i])+': '+String(result.reason?.message||result.reason).slice(0,100));
+  }
+  if(ok===0&&errors.length>=10)break; // Provider rejected all requests: stop retrying.
+ }
+ if(!ok)throw Error('ESPN sin respuesta ('+errors.slice(0,2).join('; ')+')');
+ const dedup=[...new Map(results.map(x=>[x.competitionId+'/'+x.id,x])).values()];
+ dedup.errors=errors;dedup.daysOk=ok;
+ return dedup;
 }
