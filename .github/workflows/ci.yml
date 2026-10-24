@@ -24,5 +24,7 @@ jobs:
         run: |
           node --check assets/js/calendar.mjs
           node --check assets/js/fixtures.mjs
-      - name: Ejecutar pruebas del calendario Python
+      - name: Validar sintaxis Python
+        run: python3 -m py_compile scripts/build_calendar.py scripts/build_odds.py
+      - name: Ejecutar pruebas de calendario y cuotas Python
         run: PYTHONPATH=. python3 -m unittest discover -s tests -p 'test_*.py'
