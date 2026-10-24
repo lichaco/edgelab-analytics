@@ -139,6 +139,7 @@ function choose(index){
  if(window.EdgeLabUI?.chooseFixture){
   window.EdgeLabUI.chooseFixture({sport:game.sport,league:game.league,event:game.home+' vs '+game.away,starts:localDateTime(new Date(game.utc))})
  }
+ window.dispatchEvent(new CustomEvent('edgelab:fixture-select',{detail:{id:game.id,sport:game.sport}}));
  const box=el('calendarForecast');box.hidden=false;clear(box);
  if(game.sport==='football')footballForecast(game);
  else box.append(elem('p','','Partido seleccionado: '+game.home+' vs '+game.away+'. Falta seleccionar jugador y estadísticas para calcular props.'));
