@@ -24,13 +24,14 @@ ODDS = ROOT / "assets" / "data" / "odds.json"
 HOST = "https://api.the-odds-api.com/v4/sports"
 SOURCE = "The Odds API"
 SPORTS = {
-    "basketball_nba": ("nba", "basket", ("player_points", "player_rebounds", "player_assists")),
+    "basketball_nba": ("nba", "basket", ("player_points", "player_rebounds", "player_assists", "player_threes")),
     "icehockey_nhl": ("nhl", "nhl", ("player_shots_on_goal", "player_points")),
 }
 MARKET_NAMES = {
     ("basketball_nba", "player_points"): "Puntos",
     ("basketball_nba", "player_rebounds"): "Rebotes",
     ("basketball_nba", "player_assists"): "Asistencias",
+    ("basketball_nba", "player_threes"): "Triples",
     ("icehockey_nhl", "player_shots_on_goal"): "Tiros a portería",
     ("icehockey_nhl", "player_points"): "Puntos NHL",
 }
