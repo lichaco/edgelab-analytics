@@ -41,3 +41,5 @@
 .calendar-disclaimer{margin:15px 0 0}
 @media(max-width:820px){.calendar-controls{grid-template-columns:1fr 1fr}.calendar-grid{grid-template-columns:1fr}.calendar-prob-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.calendar-controls .field:first-child,.calendar-controls .field:nth-child(3){grid-column:1/-1}.calendar-head .pill{display:none}.calendar-names{font-size:13px}}
+
+.calendar-bottom .btn:disabled{opacity:.62;cursor:not-allowed;border-color:#536074}
