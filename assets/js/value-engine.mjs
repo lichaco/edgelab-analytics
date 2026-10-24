@@ -9,6 +9,8 @@ export function sameLine(a,b){
 export function modelProbability(market, side, rates, predictions){
  if(!rates||!predictions) return null;
  if(market.kind==='result'){
+  // Sin empate publicado, podría ser Draw No Bet: no aplicar el 1X2.
+  if(!market.selections?.draw)return null;
   if(!['home','draw','away'].includes(side))return null;
   return predictions.oneXTwo?.[side]??null;
  }
