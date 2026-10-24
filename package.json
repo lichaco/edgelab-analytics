@@ -1,0 +1,10 @@
+{
+  "name": "edgelab-analytics",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Panel personal de analisis deportivo sin APIs ni secretos",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check assets/js/app.js"
+  }
+}
