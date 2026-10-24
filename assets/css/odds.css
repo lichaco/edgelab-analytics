@@ -1,0 +1,23 @@
+#autoOdds{margin:16px 0;border-color:#36495b}#autoOdds .sectionhead{margin-bottom:15px}
+.odds-filters{display:flex;align-items:end;gap:13px;flex-wrap:wrap;margin:10px 0 15px}
+.odds-filters label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#b8cadb}
+.odds-filters select{background:#111d2b;color:#f0f5ff;border:1px solid #37495d;border-radius:8px;padding:10px;min-width:140px}
+.odds-notice{border:1px solid #39546a;border-radius:9px;padding:11px 12px;color:#d2e6f5;background:#152736;font-size:13px;line-height:1.5}
+.odds-notice[data-tone="warning"]{border-color:#806634;color:#f2cc85;background:#262219}
+.odds-notice[data-tone="success"]{border-color:#246c50;color:#8be8c4;background:#142b26}
+.odds-stats{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;font-weight:700;color:#a8c7da;margin:14px 0}
+#oddsSignals h4{font-size:15px;margin:15px 0 10px}
+#oddsSignals .btn{margin:7px 0}
+.odds-empty{font-size:13px;color:#a3b9cb;border:1px dashed #435468;padding:16px;border-radius:10px}
+.odds-error{color:#edbc8d;font-size:12px;line-height:1.5}
+.odds-scroll{overflow:auto;max-width:100%;margin:12px 0}
+#autoOdds table{min-width:820px}
+#autoOdds table th,#autoOdds table td{white-space:normal;min-width:95px}
+#autoOdds table td:nth-child(2){min-width:170px}
+.odds-all{border:1px solid #314457;border-radius:11px;padding:14px;margin-top:17px}
+.odds-all>summary{font-size:14px;font-weight:750;color:#addcf3}
+.odds-match{background:#101b27;border:1px solid #344457;padding:11px;margin:12px 0}
+.odds-match summary{color:#e1f3ff;font-size:13px}
+.odds-meta{color:#a6d5c1;font-size:12px}
+.odds-footnote{color:#8fa6bb;font-size:11px;line-height:1.6;margin-top:17px}
+@media(max-width:650px){.odds-filters{display:grid;grid-template-columns:1fr 1fr}.odds-filters select{min-width:0;width:100%}#autoOdds table{font-size:11px}}
