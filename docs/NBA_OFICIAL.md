@@ -13,7 +13,7 @@ El proveedor no garantiza estos endpoints como API pública de terceros; **403 F
 
 ## Mercado, muestras y cálculo
 
-**The Odds API** proporciona cuotas de player props \`player_points\`, \`player_rebounds\`, \`player_assists\` y ahora \`player_threes\`. El modelo conecta las cuotas con sus resultados utilizando ID de fixture, nombre exacto de jugador, línea numérica, tipo de mercado y misma casa, respetando el timestamp. En ausencia de cuotas Over **mayores que 1.80**, no se consulta el CDN.
+**The Odds API** proporciona cuotas de player props \`player_points\`, \`player_rebounds\`, \`player_assists\` y ahora \`player_threes\`. El modelo conecta las cuotas con sus resultados utilizando ID de fixture, nombre exacto de jugador, línea numérica, tipo de mercado y misma casa, respetando el timestamp. Si aún no hay cuotas Over **mayores que 1.80**, el colector igualmente **precarga en caché privada los box scores oficiales** correspondientes a los dos próximos partidos NBA del calendario dentro de 48 horas. No publica pronósticos hasta contar con una cuota coincidente y suficientes partidos.
 
 El modelo es **experimental**: medias ponderadas de los últimos 5–10 partidos oficiales y desviación estándar muestral con piso mínimo, ajuste moderado de media por tendencia de minutos y aproximación normal. **No está validado retrospectivamente**; su EV positivo puede estar sobreestimado.
 
