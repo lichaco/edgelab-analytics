@@ -9,7 +9,7 @@ test('colas estadísticas y cuotas justas',()=>{
  assert.equal(poissonOver(3,2),null);
  assert.ok(negativeBinomialOver(4,3.5,2)>0&&negativeBinomialOver(4,3.5,2)<1);
  assert.ok(normalOver(25,6,24.5)>.45);
- assert.equal(oddsMetrics(.6,2).ev,.2);
+ assert.ok(Math.abs(oddsMetrics(.6,2).ev-.2)<1e-12);
 });
 test('BO3 exhaustivo y hándicap correctamente complementarios',()=>{
  const r=bestOfThree(.7,.3,.55);
