@@ -18,5 +18,11 @@ jobs:
           node-version: '22'
       - name: Verificar JavaScript
         run: npm run check
-      - name: Ejecutar pruebas
+      - name: Ejecutar pruebas JavaScript
         run: npm test
+      - name: Verificar módulos de calendario
+        run: |
+          node --check assets/js/calendar.mjs
+          node --check assets/js/fixtures.mjs
+      - name: Ejecutar pruebas del calendario Python
+        run: PYTHONPATH=. python3 -m unittest discover -s tests -p 'test_*.py'
