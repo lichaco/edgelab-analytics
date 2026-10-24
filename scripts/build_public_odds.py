@@ -79,7 +79,7 @@ def price(v):
         return None
     if not math.isfinite(p):
         return None
-    if 1.001 < p <= 30 and int(p) != p:
+    if 1.001 < p <= 30:
         return round(p, 4)  # Some JSONs expose decimal prices directly.
     if p >= 100:
         return round(1 + p / 100, 4)
@@ -339,6 +339,7 @@ def main():
           "| revisados:", diagnostics.get("events_considered", 0),
           "| partidos con cuotas:", len(snapshot["events"]),
           "| casas:", diagnostics.get("books", {}),
+          "| cobertura:", diagnostics.get("coverage", {}),
           "| incidencias:", len(diagnostics.get("errors", [])))
 
 
