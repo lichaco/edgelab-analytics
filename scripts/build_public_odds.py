@@ -17,7 +17,10 @@ import json
 import math
 import re
 
-from scripts.build_odds import match_event
+try:
+    from .build_odds import match_event
+except ImportError:
+    from build_odds import match_event
 
 ROOT = Path(__file__).resolve().parents[1]
 CALENDAR = ROOT / "assets" / "data" / "calendar.json"
