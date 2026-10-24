@@ -1,10 +1,10 @@
 {
   "name": "edgelab-analytics",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Panel personal de analisis deportivo sin APIs ni secretos",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check assets/js/app.js && node --check assets/js/fixtures.mjs && node --check assets/js/calendar.mjs && node --check assets/js/football-model.mjs"
+    "check": "node --check assets/js/app.js && node --check assets/js/fixtures.mjs && node --check assets/js/calendar.mjs && node --check assets/js/football-model.mjs && node --check assets/js/value-engine.mjs && node --check assets/js/odds-dashboard.mjs"
   }
 }
