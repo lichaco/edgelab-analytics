@@ -1,0 +1,21 @@
+# Credenciales y configuración privada
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Datos privados, exportaciones y dependencias
+private-data/
+exports/
+node_modules/
+.venv/
+__pycache__/
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
